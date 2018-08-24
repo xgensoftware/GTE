@@ -14,8 +14,14 @@ namespace GET_Test
     {
         static void Main(string[] args)
         {
-            VelocifyService s = new VelocifyService("brian@bestrate-insurance.com", "7164789226");
-            Console.WriteLine(s.GetContactIdByPhone("7164789226"));
+            //VelocifyService s = new VelocifyService("brian@bestrate-insurance.com", "7164789226");
+            //Console.WriteLine(s.GetContactIdByPhone("7164789226"));
+
+            Registration r = new Registration();
+            r.CompanyName = "Test Company";
+            r.APIUserName = "Test";
+            r.APIPassword = "123";
+            r.Save();
 
             Console.ReadLine();
         }
