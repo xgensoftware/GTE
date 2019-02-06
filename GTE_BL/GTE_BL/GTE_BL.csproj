@@ -30,15 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="com.Xgensoftware.Core">
-      <HintPath>..\..\..\_components\XgenCore\com.Xgensoftware.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="com.Xgensoftware.DAL">
-      <HintPath>..\..\..\_components\XgenCore\com.Xgensoftware.DAL.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -65,6 +58,8 @@
     <Compile Include="Entities\Registration.cs" />
     <Compile Include="Entities\SearchResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QPBEntities\QBPOutputFile.cs" />
+    <Compile Include="QPBEntities\QBPResponse.cs" />
     <Compile Include="Repository\ClientRepository.cs" />
     <Compile Include="Service References\VelocifyAPIService\Reference.cs">
       <AutoGen>True</AutoGen>
@@ -97,6 +92,16 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\XgenCore\com.Xgensoftware.Core\com.Xgensoftware.Core.csproj">
+      <Project>{1f8d7787-a77b-4b1f-8641-8543419286b7}</Project>
+      <Name>com.Xgensoftware.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\XgenCore\com.Xgensoftware.DAL\com.Xgensoftware.DAL.csproj">
+      <Project>{98a78616-e601-45e8-a3a2-809679aa9055}</Project>
+      <Name>com.Xgensoftware.DAL</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

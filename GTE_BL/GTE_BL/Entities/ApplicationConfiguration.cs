@@ -38,5 +38,24 @@ namespace GTE_BL.Entities
         {
             get { return ConfigurationManager.AppSettings["DBConnection"].ToString(); }
         }
+
+        public static string QBPAPIUrl
+        {
+            get { return ConfigurationManager.AppSettings["QBPAPIUrl"].ToString(); }
+        }
+        public static string QBPAPIKey
+        {
+            get { return ConfigurationManager.AppSettings["QBPAPIKey"].ToString(); }
+        }
+
+        public static string QBPOutputFile
+        {
+            get { return ConfigurationManager.AppSettings["QBPOutputFile"].ToString(); }
+        }
+
+        public static string LogFile
+        {
+            get { return ConfigurationManager.AppSettings["LogFile"].ToString(); }
+        }
     }
 }
