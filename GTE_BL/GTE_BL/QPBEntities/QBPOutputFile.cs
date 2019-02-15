@@ -20,6 +20,8 @@ namespace GTE_BL.QPBEntities
 
         public string ModelDescription { get; set; }
 
+        public int Inventory { get; set; }
+
         public string Size { get; set; }
 
         public string Color { get; set; }
@@ -55,5 +57,9 @@ namespace GTE_BL.QPBEntities
         public string Substitute { get; set; }
 
         public string RecentlyUpdated { get; set; }
+
+        public string ImageUrl { get; set; }
+
+        
     }
 }

@@ -57,5 +57,11 @@ namespace GTE_BL.Entities
         {
             get { return ConfigurationManager.AppSettings["LogFile"].ToString(); }
         }
+
+        public static string ProductImageURL
+        {
+            get { return ConfigurationManager.AppSettings["ProductImageURL"].ToString(); }
+        }
+
     }
 }

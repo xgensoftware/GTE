@@ -12,7 +12,31 @@ namespace GTE_BL.QPBEntities
     {
         public string type { get; set; }
     }
+    #region Inventory
+    public class QBPInventory
+    {
+        public int quantity { get; set; }
+        public string product { get; set; }
+        public string warehouse { get; set; }
+    }
+    public class QBPAPIRequest
+    {
+        public List<string> warehouseCodes { get; set; }
+        public List<string> productCodes { get; set; }
 
+        public List<string> codes { get; set; }
+    }
+
+    public class QBPInventoryResponse
+    {
+        public ResponseStatus responseStatus { get; set; }
+        public List<object> errors { get; set; }
+        public List<QBPInventory> inventories { get; set; }
+    }
+    
+    #endregion
+
+    #region Product
     public class QBPProductDetailResponse
     {
         public List<Error> errors { get; set; }
@@ -25,11 +49,17 @@ namespace GTE_BL.QPBEntities
         public List<object> errors { get; set; }
         public List<string> codes { get; set; }
     }
+    
 
-    public class QBPProductRequest
+    public class ProductAttribute
     {
-        public List<string> codes { get; set; }
+        public string name { get; set; }
+        public string unit { get; set; }
+        public string value { get; set; }
     }
+    #endregion
+
+
 
     public class Error
     {
@@ -53,12 +83,7 @@ namespace GTE_BL.QPBEntities
         public string name { get; set; }
     }
 
-    public class ProductAttribute
-    {
-        public string name { get; set; }
-        public string unit { get; set; }
-        public string value { get; set; }
-    }
+
 
     public class Height
     {

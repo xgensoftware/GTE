@@ -16,6 +16,16 @@ namespace BikePartScraper
 {
     class Program
     {
+        static List<string> GetWarehouseCodes()
+        {
+            List<string> codes = new List<string>();
+            codes.Add("1000");
+            codes.Add("1100");
+            codes.Add("1200");
+            codes.Add("1300");
+            return codes;
+        }
+
         static RestRequest FormRequest(Method method, string url)
         {
             RestRequest request = new RestRequest(url, method);
@@ -23,7 +33,7 @@ namespace BikePartScraper
             request.AddHeader("Accept", "application/json");
             return request;
         }
-        static T GetAPIData<T>(Method method, string url, QBPProductRequest body = null)
+        static T GetAPIData<T>(Method method, string url, QBPAPIRequest body = null)
         {
             var restClient = new RestClient(ApplicationConfiguration.QBPAPIUrl);
             var request = FormRequest(method, url);
@@ -43,6 +53,13 @@ namespace BikePartScraper
                 
         }
         
+        static int GetProductInventoryCount()
+        {
+            int inventoryCount = 0;
+
+            return inventoryCount;
+        }
+
         static QBPOutputFile CreateProductOutputRecord(Product p)
         {
             QBPOutputFile output = new QBPOutputFile();
@@ -112,18 +129,34 @@ namespace BikePartScraper
             string url = string.Empty;
 
             var productCodes = GetAPIData<QBPProductResponse>(Method.GET,string.Format("{0}/1/productcode/list", ApplicationConfiguration.QBPAPIUrl));
-            
-            while(productCodes.codes.Count > 0)
-            {
-                var productDetailRequest = new QBPProductRequest();
-                productDetailRequest.codes = productCodes.codes.Take(100).ToList();
+
+            while (productCodes.codes.Count > 0)
+            { 
+                var inventoryRequest = new QBPAPIRequest();
+                var productDetailRequest = new QBPAPIRequest();
+                var selectedProductCode = productCodes.codes.Take(100).ToList();
+                productDetailRequest.codes = selectedProductCode;
+                inventoryRequest.productCodes = selectedProductCode;
+                inventoryRequest.warehouseCodes = GetWarehouseCodes();
                 try
                 {
                     var productDetails = GetAPIData<QBPProductDetailResponse>(Method.POST, string.Format("{0}/1/product", ApplicationConfiguration.QBPAPIUrl), productDetailRequest);
+                    var productinventories = GetAPIData<QBPInventoryResponse>(Method.POST, string.Format("{0}/1/inventory", ApplicationConfiguration.QBPAPIUrl), inventoryRequest);
                     Parallel.ForEach(productDetails.products, product =>
                     {
-                        outputFile.Add(CreateProductOutputRecord(product));
+                        var productOutput = CreateProductOutputRecord(product);
+
+                        var image = product.images.FirstOrDefault();
+                        if (image != null)
+                            productOutput.ImageUrl = string.Format("{0}{1}", ApplicationConfiguration.ProductImageURL, image);
+
+                        var inventoryList = productinventories.inventories.Where(i => i.product == product.ProdID).ToList();
+                        productOutput.Inventory = inventoryList.Sum(i => i.quantity);
+                        
+                        outputFile.Add(productOutput);
                     });
+                    
+
                 }
                 catch (Exception ex)
                 {
