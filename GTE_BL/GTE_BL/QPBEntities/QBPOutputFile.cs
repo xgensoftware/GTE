@@ -10,7 +10,7 @@ namespace GTE_BL.QPBEntities
     {
         public string ProdID { get; set;}
 
-        public string UPC { get; set; }
+        public int UPC { get; set; }
 
         public string Category { get; set; }
 
@@ -60,6 +60,9 @@ namespace GTE_BL.QPBEntities
 
         public string ImageUrl { get; set; }
 
-        
+        public override string ToString()
+        {
+            return string.Format("{0} {1}", ProdID, ProductDescription);
+        }
     }
 }

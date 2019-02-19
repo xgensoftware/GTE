@@ -16,6 +16,8 @@ namespace BikePartScraper
 {
     class Program
     {
+        static ConcurrentBag<QBPOutputFile> _outputFile = null;
+
         static List<string> GetWarehouseCodes()
         {
             List<string> codes = new List<string>();
@@ -80,7 +82,11 @@ namespace BikePartScraper
                 }
 
                 if (p.barcodes.Count > 0)
-                    output.UPC = p.barcodes[0];
+                {
+                    int upc = 0;
+                    int.TryParse(p.barcodes[0], out upc);
+                    output.UPC = upc;
+                }
 
                 output.MSRP = p.msrp;
                 output.MAP = p.mapPrice;
@@ -112,6 +118,39 @@ namespace BikePartScraper
             return output;
         }
 
+        static void ProcessProductDetails(QBPAPIRequest productDetailRequest, List<string> selectedProductCode)
+        {
+            var inventoryRequest = new QBPAPIRequest();
+            inventoryRequest.productCodes = selectedProductCode;
+            inventoryRequest.warehouseCodes = GetWarehouseCodes();
+
+            try
+            {
+                var productDetails = GetAPIData<QBPProductDetailResponse>(Method.POST, string.Format("{0}/1/product", ApplicationConfiguration.QBPAPIUrl), productDetailRequest);
+                var productinventories = GetAPIData<QBPInventoryResponse>(Method.POST, string.Format("{0}/1/inventory", ApplicationConfiguration.QBPAPIUrl), inventoryRequest);
+                Parallel.ForEach(productDetails.products, product =>
+                {
+                    var productOutput = CreateProductOutputRecord(product);
+
+                    var image = product.images.FirstOrDefault();
+                    if (image != null)
+                        productOutput.ImageUrl = string.Format("{0}{1}", ApplicationConfiguration.ProductImageURL, image);
+
+                    var inventoryList = productinventories.inventories.Where(i => i.product == product.ProdID).ToList();
+                    productOutput.Inventory = inventoryList.Sum(i => i.quantity);
+
+                    WriteToConsole(string.Format("Adding {0} to file.", productOutput.ToString()));
+                    _outputFile.Add(productOutput);
+                });
+
+
+            }
+            catch (Exception ex)
+            {
+                WriteToConsole(string.Format("Error processing product details. ERROR: {0}", ex.Message));
+            }
+        }
+
         static void WriteToConsole(string msg)
         {
             Logging log = new Logging(ApplicationConfiguration.LogFile);
@@ -124,50 +163,64 @@ namespace BikePartScraper
         {
             System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             WriteToConsole(string.Format("******** Starting export process {0}  ********", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")));
+            List<Task> taskList = new List<Task>();
 
-            ConcurrentBag <QBPOutputFile> outputFile = new ConcurrentBag<QBPOutputFile>();
+            _outputFile = new ConcurrentBag<QBPOutputFile>();
             string url = string.Empty;
 
             var productCodes = GetAPIData<QBPProductResponse>(Method.GET,string.Format("{0}/1/productcode/list", ApplicationConfiguration.QBPAPIUrl));
 
             while (productCodes.codes.Count > 0)
-            { 
-                var inventoryRequest = new QBPAPIRequest();
-                var productDetailRequest = new QBPAPIRequest();
+            {
                 var selectedProductCode = productCodes.codes.Take(100).ToList();
+                var productDetailRequest = new QBPAPIRequest();
                 productDetailRequest.codes = selectedProductCode;
-                inventoryRequest.productCodes = selectedProductCode;
-                inventoryRequest.warehouseCodes = GetWarehouseCodes();
-                try
-                {
-                    var productDetails = GetAPIData<QBPProductDetailResponse>(Method.POST, string.Format("{0}/1/product", ApplicationConfiguration.QBPAPIUrl), productDetailRequest);
-                    var productinventories = GetAPIData<QBPInventoryResponse>(Method.POST, string.Format("{0}/1/inventory", ApplicationConfiguration.QBPAPIUrl), inventoryRequest);
-                    Parallel.ForEach(productDetails.products, product =>
-                    {
-                        var productOutput = CreateProductOutputRecord(product);
 
-                        var image = product.images.FirstOrDefault();
-                        if (image != null)
-                            productOutput.ImageUrl = string.Format("{0}{1}", ApplicationConfiguration.ProductImageURL, image);
+                var newTask = Task.Factory.StartNew(() => {
+                    ProcessProductDetails(productDetailRequest, selectedProductCode);
+                });
+                taskList.Add(newTask);
+                
+                #region Old
+                //var inventoryRequest = new QBPAPIRequest();
+                //var productDetailRequest = new QBPAPIRequest();
 
-                        var inventoryList = productinventories.inventories.Where(i => i.product == product.ProdID).ToList();
-                        productOutput.Inventory = inventoryList.Sum(i => i.quantity);
-                        
-                        outputFile.Add(productOutput);
-                    });
-                    
+                //productDetailRequest.codes = selectedProductCode;
+                //inventoryRequest.productCodes = selectedProductCode;
+                //inventoryRequest.warehouseCodes = GetWarehouseCodes();
+                //try
+                //{
+                //    var productDetails = GetAPIData<QBPProductDetailResponse>(Method.POST, string.Format("{0}/1/product", ApplicationConfiguration.QBPAPIUrl), productDetailRequest);
+                //    var productinventories = GetAPIData<QBPInventoryResponse>(Method.POST, string.Format("{0}/1/inventory", ApplicationConfiguration.QBPAPIUrl), inventoryRequest);
+                //    Parallel.ForEach(productDetails.products, product =>
+                //    {
+                //        var productOutput = CreateProductOutputRecord(product);
 
-                }
-                catch (Exception ex)
-                {
-                    WriteToConsole(string.Format("Error processing product details. ERROR: {0}", ex.Message));
-                }
+                //        var image = product.images.FirstOrDefault();
+                //        if (image != null)
+                //            productOutput.ImageUrl = string.Format("{0}{1}", ApplicationConfiguration.ProductImageURL, image);
+
+                //        var inventoryList = productinventories.inventories.Where(i => i.product == product.ProdID).ToList();
+                //        productOutput.Inventory = inventoryList.Sum(i => i.quantity);
+
+                //        outputFile.Add(productOutput);
+                //    });
+
+
+                //}
+                //catch (Exception ex)
+                //{
+                //    WriteToConsole(string.Format("Error processing product details. ERROR: {0}", ex.Message));
+                //}
+                #endregion
+
                 productCodes.codes.RemoveAll(p => productDetailRequest.codes.Contains(p));
             }
 
-            if (outputFile.Count > 0)
+            Task.WaitAll(taskList.ToArray());
+            if (_outputFile.Count > 0)
             {
-                outputFile.ToCsvFile(",", ApplicationConfiguration.QBPOutputFile);
+                _outputFile.ToCsvFile(",", ApplicationConfiguration.QBPOutputFile);
                 WriteToConsole(string.Format("Writing output file {0}", ApplicationConfiguration.QBPOutputFile));
             }
 
