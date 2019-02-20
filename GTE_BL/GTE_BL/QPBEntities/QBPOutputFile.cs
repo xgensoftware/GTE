@@ -10,7 +10,7 @@ namespace GTE_BL.QPBEntities
     {
         public string ProdID { get; set;}
 
-        public int UPC { get; set; }
+        public long UPC { get; set; }
 
         public string Category { get; set; }
 

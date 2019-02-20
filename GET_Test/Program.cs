@@ -16,12 +16,10 @@ namespace GET_Test
         {
             //VelocifyService s = new VelocifyService("brian@bestrate-insurance.com", "7164789226");
             //Console.WriteLine(s.GetContactIdByPhone("7164789226"));
-
-            Registration r = new Registration();
-            r.CompanyName = "Test Company";
-            r.APIUserName = "Test";
-            r.APIPassword = "123";
-            r.Save();
+            
+            var sUPC = "99999";
+            var b = int.TryParse(sUPC, out int upc);
+            Console.WriteLine(upc);
 
             Console.ReadLine();
         }

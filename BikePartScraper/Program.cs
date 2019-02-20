@@ -83,8 +83,8 @@ namespace BikePartScraper
 
                 if (p.barcodes.Count > 0)
                 {
-                    int upc = 0;
-                    int.TryParse(p.barcodes[0], out upc);
+                    var sUPC = p.barcodes[0];
+                    var isVald = long.TryParse(sUPC, out long upc);
                     output.UPC = upc;
                 }
 
