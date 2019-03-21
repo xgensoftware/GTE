@@ -93,6 +93,7 @@ namespace BikePartScraper
                 output.EachCost = p.basePrice;
                 output.ManufacturerProd = p.manufacturerPartNumber;
                 output.Discontinued = p.discontinued ? "Yes" : "No";
+                output.ThirdPartyAllowed = p.thirdPartyAllowed ? "Yes" : "No";
                 output.UOM = p.unit;
                 output.Weight = p.weightsAndMeasures.weight.value;
                 output.Length = p.weightsAndMeasures.length.value;
@@ -101,11 +102,11 @@ namespace BikePartScraper
                 output.ProductDescription = p.name;
                 output.ORMD = p.ormd ? "Yes" : "No";
 
-                var size = p.productAttributes.Where(s => s.name.ToLower() == "size").FirstOrDefault();
+                var size = p.productAttributes.FirstOrDefault(s => s.name.ToLower() == "size");
                 if (size != null)
                     output.Size = size.value;
 
-                var color = p.productAttributes.Where(s =>s.name.ToLower() == "color").FirstOrDefault();
+                var color = p.productAttributes.FirstOrDefault(s => s.name.ToLower() == "color");
                 if (color != null)
                     output.Color = color.value;
 

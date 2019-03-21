@@ -60,6 +60,8 @@ namespace GTE_BL.QPBEntities
 
         public string ImageUrl { get; set; }
 
+        public string ThirdPartyAllowed { get; set; }
+
         public override string ToString()
         {
             return string.Format("{0} {1}", ProdID, ProductDescription);
