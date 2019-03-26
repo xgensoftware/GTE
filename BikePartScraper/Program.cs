@@ -35,6 +35,7 @@ namespace BikePartScraper
             request.AddHeader("Accept", "application/json");
             return request;
         }
+
         static T GetAPIData<T>(Method method, string url, QBPAPIRequest body = null)
         {
             var restClient = new RestClient(ApplicationConfiguration.QBPAPIUrl);
@@ -169,8 +170,9 @@ namespace BikePartScraper
             _outputFile = new ConcurrentBag<QBPOutputFile>();
             string url = string.Empty;
 
-            var productCodes = GetAPIData<QBPProductResponse>(Method.GET,string.Format("{0}/1/productcode/list", ApplicationConfiguration.QBPAPIUrl));
+            var productCodes = GetAPIData<QBPProductResponse>(Method.GET, string.Format("{0}/1/productcode/list", ApplicationConfiguration.QBPAPIUrl));
 
+            productCodes.codes = productCodes.codes.Take(100).ToList();
             while (productCodes.codes.Count > 0)
             {
                 var selectedProductCode = productCodes.codes.Take(100).ToList();
@@ -219,9 +221,9 @@ namespace BikePartScraper
             }
 
             Task.WaitAll(taskList.ToArray());
-            if (_outputFile.Count > 0)
+            if (_outputFile.Any())
             {
-                _outputFile.ToCsvFile(",", ApplicationConfiguration.QBPOutputFile);
+                _outputFile.ToCSV(",", ApplicationConfiguration.QBPOutputFile);
                 WriteToConsole(string.Format("Writing output file {0}", ApplicationConfiguration.QBPOutputFile));
             }
 

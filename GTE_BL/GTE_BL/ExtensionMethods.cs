@@ -69,8 +69,7 @@ namespace GTE_BL
         }
 
         private static string ToCsvValue<T>(this T item)
-        {
-            if (item == null) return "\"\"";
+        {            if (item == null) return "\"\"";
 
             if (item is string)
             {
@@ -84,27 +83,36 @@ namespace GTE_BL
             return string.Format("\"{0}\"", item);
         }
 
-        /*
-        private static string ToCSVFields(string separator, FieldInfo[] fields, object o)
+        
+        private static string ToCSVFields(string separator,string[] header, PropertyInfo[] fields, object o)
         {
             StringBuilder data = new StringBuilder();
-            foreach (var f in fields)
+            foreach(var h in header)
             {
-                if (data.Length > 0)
-                    data.Append(separator);
+                var field = fields.First(f => f.Name == h);
+                if(field != null)
+                {
+                    if (data.Length > 0)
+                        data.Append(separator);
 
-                var x = f.GetValue(o);
+                    var x = field.GetValue(o);
 
-                if (x != null)
-                    data.Append(x.ToString());
+                    if (x != null)
+                    {
+                        var val = x.ToString().Replace(',',' ');
+                        data.Append(val);
+                    } 
+                    else
+                        data.Append(string.Empty);
+                }
             }
             return data.ToString();
         }
 
-        public static void ToCSV<T>(this IEnumerable<T> objectList, string separator, string fileName)
+        public static void ToCSV<T>(this IEnumerable<T> objectList, string separator, string fileName) where T : class
         {
             var type = typeof(T);
-            var fields = type.GetFields();
+            var fields = type.GetProperties();
             string header = String.Join(separator, fields.Select(f => f.Name).ToArray());
             using (FileStream file = File.Create(fileName))
             {
@@ -114,11 +122,11 @@ namespace GTE_BL
 
                     foreach (var o in objectList)
                     {
-                        writer.WriteLine(ToCSVFields(separator, fields, o));
+                        writer.WriteLine(ToCSVFields(separator,header.Split(','), fields, o));
                     }
                 }
             }
         }
-        */
+       
     }
 }
