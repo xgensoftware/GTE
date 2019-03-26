@@ -171,8 +171,7 @@ namespace BikePartScraper
             string url = string.Empty;
 
             var productCodes = GetAPIData<QBPProductResponse>(Method.GET, string.Format("{0}/1/productcode/list", ApplicationConfiguration.QBPAPIUrl));
-
-            productCodes.codes = productCodes.codes.Take(100).ToList();
+            
             while (productCodes.codes.Count > 0)
             {
                 var selectedProductCode = productCodes.codes.Take(100).ToList();
